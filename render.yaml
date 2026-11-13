@@ -5,9 +5,9 @@ services:
     plan: free
     buildCommand: "./build.sh"
     startCommand: "gunicorn config.wsgi:application"
+    healthCheckPath: /stock/
+    autoDeploy: true
     envVars:
-      - key: PYTHON_VERSION
-        value: "3.13.0"
       - key: DEBUG
         value: "False"
       - key: SECRET_KEY

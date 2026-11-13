@@ -107,8 +107,7 @@ pages alertes et catégorie, redirection de la racine.
    | `SECRET_KEY` | valeur aléatoire générée par l'hébergeur |
    | `DEBUG` | `False` |
    | `ALLOWED_HOSTS` | `mondomaine.onrender.com` (ou `.onrender.com`) |
-   | `CSRF_TRUSTED_ORIGINS` | `https://mondomaine.onrender.com` |
-   | `PYTHON_VERSION` | `3.13.0` |
+   | `CSRF_TRUSTED_ORIGINS` | `https://mondomaine.onrender.com` (déduit automatiquement de `RENDER_EXTERNAL_HOSTNAME`) |
 
 4. Le déploiement exécute automatiquement `collectstatic` puis `migrate` (voir `build.sh`).
 5. Vérifier en ligne : la liste `/stock/`, un formulaire de création et la page `/stock/alertes/`.
