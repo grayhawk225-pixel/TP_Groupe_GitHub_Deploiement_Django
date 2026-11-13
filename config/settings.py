@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 
 import os
 from pathlib import Path
+from urllib.parse import parse_qs, unquote, urlparse
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -46,6 +47,13 @@ if _hote_render:
 CSRF_TRUSTED_ORIGINS = _env_liste("CSRF_TRUSTED_ORIGINS", "")
 if _hote_render:
     CSRF_TRUSTED_ORIGINS.append(f"https://{_hote_render}")
+
+# Vercel expose ces domaines (sans « https:// ») dans les variables système.
+for _nom_vercel in ("VERCEL_URL", "VERCEL_PROJECT_PRODUCTION_URL"):
+    _hote_vercel = os.environ.get(_nom_vercel, "").strip()
+    if _hote_vercel:
+        ALLOWED_HOSTS.append(_hote_vercel)
+        CSRF_TRUSTED_ORIGINS.append(f"https://{_hote_vercel}")
 
 
 # Application definition
@@ -100,6 +108,23 @@ DATABASES = {
         'NAME': BASE_DIR / 'db.sqlite3',
     }
 }
+
+# Sur Vercel (système de fichiers en lecture seule), la base PostgreSQL est
+# fournie par DATABASE_URL ; sans cette variable on garde SQLite en local.
+_database_url = os.environ.get("DATABASE_URL", "").strip()
+if _database_url:
+    _url = urlparse(_database_url)
+    DATABASES['default'] = {
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': unquote(_url.path.lstrip("/")),
+        'USER': unquote(_url.username or ""),
+        'PASSWORD': unquote(_url.password or ""),
+        'HOST': _url.hostname or "",
+        'PORT': str(_url.port or ""),
+    }
+    _sslmode = parse_qs(_url.query).get("sslmode", [""])[0]
+    if _sslmode:
+        DATABASES['default']['OPTIONS'] = {'sslmode': _sslmode}
 
 
 # Password validation
